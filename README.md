@@ -10,9 +10,9 @@ We calculated parasitic load for each individual as a proportion of  blood cells
 We trained a YOLOv8m computer vision model to count healthy RBC and a YOLOv10s model to calculate infected RBC. The trained models are further referred to as YOLOrbc and YOLOinfected. We used ultralytics (https://github.com/ultralytics/ultralytics) python package to train and validate both models.
 YOLOrbc was trained on 18027 objects from 168 micrographs of 13 individuals and validated it on 2282 images of RBC from 42 micrographs. YOLOinfected was trained on the images of 1462 infected RBC from 1067 micrographs of 20 individuals and validated on 831 infected RBC from 605 micrographs. Image annotation was performed in CVAT (https://github.com/cvat-ai/cvat).
 
-The prediction mode implemented in ultralytics allows adjusting model precision and recall via selection of the threshold object detection confidence level. In order to select an optimal threshold for each model, we calculated false positive, true positive and false negative detection rates on the validation datasets given threshold confidence level 0, 0.01 … 0.99, 1. Detection was considered true positive if the intersection-over-union (IoU) of the predicted binding box and the true binding box was greater than 0.6. The confidence level threshold maximizing F1 score for each model was selected. Predictions of the models were checked manually for hallucinations and adjusted if required.
-We compared sex steroids concentration and parasitic load within each cohort and study site between timepoints using Dunn’s test with Holm’s p adjustment. If only two time points were available, Mann-Whitney test was used.
+The prediction mode implemented in ultralytics allows adjusting model precision and recall via selection of the threshold object detection confidence level. In order to select an optimal threshold for each model, we calculated false positive, true positive and false negative detection rates on the validation datasets given threshold confidence level 0, 0.01 … 0.99, 1. Detection was considered true positive if the intersection-over-union (IoU) of the predicted binding box and the true binding box was greater than 0.6. The confidence level threshold maximizing F1 score for each model was selected. Predictions of the models were checked manually for hallucinations and adjusted if required. Cell counts returned by the model were checked manually.
 
+We compared sex steroids concentration and parasitic load within each cohort and study site between timepoints using Dunn’s test with Holm’s p adjustment. If only two time points were available, Mann-Whitney test was used.
 Aligned rank transform ANOVA and Tukey’s post-hoc test was used to compare progesterone concentration between species and parasitic load between cohorts within each study site, while treating timepoint as a random effect. If the only timepoint was available, Dunn’s test was used instead. 
 
 # Implementation
@@ -29,6 +29,24 @@ This repository contains the following files and folders:
       - **val**: A directory with validation set of images (used by metric_calculator.py)
     - **labels**
       - **val**: A directory with validation set of annotations (used by metric_calculator.py)
+- **YOLO_paras**
+  - **YOLO_train.py**: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
+  - **best.pt**: Weights of the trained model
+  - **YOLO_paras_counter_v2.2.py**: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns _a)_ a .csv file with cell counts and _b)_ a directory with annotated images. Counts infected RBC. Do not classify parasites.
+  - **metric_calculator2.py**: Computes the model performance metrics based on validation dataset. In particular, was used for optimal confedence selection
+  - **metrics_out2.csv**: The output of metric_calculator2.py
+  - **data**
+    - **images**
+      - **val**: A directory with validation set of images (used by metric_calculator2.py). Note that only 50 images are in thes repo
+    - **labels**
+      - **val**: A directory with validation set of annotations (used by metric_calculator2.py). Note that only 50 images are in this repo
+- **data**: contains input filis for statistical analysis
+  - **YOLO1.5b_RBC_main2.csv**: Helthy RBC counts
+  - **YOLO2.23l_paras_main2.csv**: Infected RBC counts
+  - **horm.scv**: ELISA results
+  - **metdata.csv**: Animals' metadata (body mass, SVL, sex, species, date and site of collection)
+  - **main_check.csv**: The table containing all the data, including sex steroids concentration and manually checked cell counts
+- 
 
  
 <img width="2592" height="1944" alt="WIN_20240601_12_35_17_Pro" src="https://github.com/user-attachments/assets/1ae660ab-ae62-4cb9-b188-47d6f927e789" />
