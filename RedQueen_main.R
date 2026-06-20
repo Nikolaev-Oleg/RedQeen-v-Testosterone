@@ -9,7 +9,7 @@ library(ARTool)
 library(emmeans)
 
 #Prepare data####
-df.full <- gsheet2tbl('https://docs.google.com/spreadsheets/d/1iC9XA06jhmk0V_LYnQzpbVzkRmqKg5iJ_IlcHV2bFUg/edit?gid=283993795#gid=283993795') %>%
+df.full <- read.csv('./data/main_check.csv') %>%
   mutate(horm = as.numeric(horm),
          timepoint = glue('{str_sub(date, 3, 4)}{str_sub(date, 7, 8)}'),
          group = glue('{sex}_{sp}')) %>%
