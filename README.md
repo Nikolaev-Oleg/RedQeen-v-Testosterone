@@ -1,6 +1,6 @@
 # Does the Red Queen rule apply to rock lizards?
 
-**Methods**
+# Methods
 Three parthenogenetic (_Darevskia armeniaca_, _D. dahli_ and _D. unisexualis_) and three bisexual (_D. portschinskii_, _D. valentini_ and _D. raddei nairensis_) species were included in the study. Animals were collected in five sympatric populations in Armenia (SH, SR, HR, AS and GG) in 2022 and 2023.
 Both in 2022 and 2023 we collected blood smears from tail tips. They were air dried, transported unstained to the laboratory and stained according to Wright’s modification of Romanowski-Giemsa protocol (Wright, 1902). The smears were then studied with the Carl Zeiss Axiostar plus microscope under ×400 magnification. Micrographs were taken using the ToupCam SCMOS05100KPA digital camera.
 In 2023, we collected blood serum samples as well to measure the concentration of sex steroids. Blood sampling was performed at three timepoints (May, June and September) in SR and AC, in May and September in HR, in June and September in SH and in May in GG. 100-150 μl of blood from a caudal vein was collected to 0.5 ml centrifuge tubes and centrifuged at 3000 g for 10’. Supernatant was collected into 2 ml sealed tubes and stored at -20℃ until transportation to the laboratory. At the laboratory the tubes were stored at -80℃ until ELISA. All samples were stored for not longer than 8 months.
@@ -13,20 +13,20 @@ Aligned rank transform ANOVA and Tukey’s post-hoc test was used to compare pro
 
 # Implementation
 This repository contains the following files and folders:
-> YOLO_RBC
-  > YOLO_train.py: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
-  > best.pt: Weights of the trained model
-  > YOLO_RBC_counter_v1.2.py: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns
+- YOLO_RBC
+  - YOLO_train.py: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
+  - best.pt: Weights of the trained model
+  - YOLO_RBC_counter_v1.2.py: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns
                               1) a .csv file with cell counts
                               2) a directory with annotated images.
                               By default, distinguishes normal RBC, heterochromatic RBC (hcRBC) and RBC in a process of cell lysis (lysRBC)
-  > metric_calculator.py: Computes the model performance metrics based on validation dataset. In particular, was used for optimal confedence selection
-  > metrics_out.csv: The output of metric_calculator.py
-  > data
-    >  images
-      > val: A directory with validation set of images (used by metric_calculator.py)
-    > labels
-      > val: A directory with validation set of annotations (used by metric_calculator.py)
+  - metric_calculator.py: Computes the model performance metrics based on validation dataset. In particular, was used for optimal confedence selection
+  - metrics_out.csv: The output of metric_calculator.py
+  - data
+    -  images
+      - val: A directory with validation set of images (used by metric_calculator.py)
+    - labels
+      - val: A directory with validation set of annotations (used by metric_calculator.py)
 
  
 <img width="2592" height="1944" alt="WIN_20240601_12_35_17_Pro" src="https://github.com/user-attachments/assets/1ae660ab-ae62-4cb9-b188-47d6f927e789" />
