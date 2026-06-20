@@ -60,3 +60,7 @@ This repository contains the following files and folders:
 # Example output of YOLOrbc
 <img width="2592" height="1944" alt="WIN_20240601_12_35_17_Pro" src="https://github.com/user-attachments/assets/a6bbcec8-cb7a-4525-92ee-cd2b83eecf70" />
 
+# Data availability
+We cannot attach all the images and model weights to this repository due to great number and size of the files. However, we would be glad to share them by request:
+nikolaevod2002@gmail.com (Oleg Nikolaev)
+
