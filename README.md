@@ -14,20 +14,20 @@ Aligned rank transform ANOVA and Tukey’s post-hoc test was used to compare pro
 # Implementation
 This repository contains the following files and folders:
 
-- YOLO_RBC
-  - YOLO_train.py: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
-  - best.pt: Weights of the trained model
-  - YOLO_RBC_counter_v1.2.py: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns
+- **YOLO_RBC**
+  - **YOLO_train.py**: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
+  - **best.pt**: Weights of the trained model
+  - **YOLO_RBC_counter_v1.2.py**: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns
                               1) a .csv file with cell counts
                               2) a directory with annotated images.
                               By default, distinguishes normal RBC, heterochromatic RBC (hcRBC) and RBC in a process of cell lysis (lysRBC)
-  - metric_calculator.py: Computes the model performance metrics based on validation dataset. In particular, was used for optimal confedence selection
-  - metrics_out.csv: The output of metric_calculator.py
-  - data
-    - images
-      - val: A directory with validation set of images (used by metric_calculator.py)
-    - labels
-      - val: A directory with validation set of annotations (used by metric_calculator.py)
+  - **metric_calculator.py**: Computes the model performance metrics based on validation dataset. In particular, was used for optimal confedence selection
+  - **metrics_out.csv**: The output of metric_calculator.py
+  - **data**
+    - **images**
+      - **val**: A directory with validation set of images (used by metric_calculator.py)
+    - **labels**
+      - **val**: A directory with validation set of annotations (used by metric_calculator.py)
 
  
 <img width="2592" height="1944" alt="WIN_20240601_12_35_17_Pro" src="https://github.com/user-attachments/assets/1ae660ab-ae62-4cb9-b188-47d6f927e789" />
