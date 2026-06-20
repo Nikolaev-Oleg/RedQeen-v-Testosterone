@@ -9,7 +9,8 @@ library(ARTool)
 library(emmeans)
 
 #Prepare data####
-df.full <- read.csv('./data/main_check.csv') %>%
+df.full <- read.csv('./data/main_check.csv',
+                   header = T) %>%
   mutate(horm = as.numeric(horm),
          timepoint = glue('{str_sub(date, 3, 4)}{str_sub(date, 7, 8)}'),
          group = glue('{sex}_{sp}')) %>%
