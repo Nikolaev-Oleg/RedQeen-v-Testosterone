@@ -13,9 +13,10 @@ Aligned rank transform ANOVA and Tukey’s post-hoc test was used to compare pro
 
 # Implementation
 This repository contains the following files and folders:
+
 YOLO_RBC
-  |_ YOLO_train.py: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
-  |_ best.pt: Weights of the trained model
+  - YOLO_train.py: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
+  - best.pt: Weights of the trained model
   - YOLO_RBC_counter_v1.2.py: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns
                               1) a .csv file with cell counts
                               2) a directory with annotated images.
