@@ -49,7 +49,7 @@ for confidence in steps:
         val = torch.from_numpy(val).float()
 
         # Prediction
-        cl = [0, 12, 17]  # Классы для детекции: RBC, imRBC, lysRBC
+        cl = [0, 12, 17]  # RBC, imRBC, lysRBC
         model = YOLO('../runs_Egor/runs/detect/train5/weights/best.pt')
 
         predict = model.predict(path_to_img,
