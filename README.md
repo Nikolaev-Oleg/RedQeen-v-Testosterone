@@ -18,7 +18,7 @@ Aligned rank transform ANOVA and Tukey’s post-hoc test was used to compare pro
 # Implementation
 This repository contains the following files and folders:
 
-- **YOLO_RBC**
+- **YOLO_RBC**: Data and code for YOLOrbc model
   - **YOLO_train.py**: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
   - **best.pt**: Weights of the trained model
   - **YOLO_RBC_counter_v1.2.py**: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns _a)_ a .csv file with cell counts and _b)_ a directory with annotated images. By default, distinguishes normal RBC, heterochromatic RBC (hcRBC) and RBC in a process of cell lysis (lysRBC)
@@ -29,7 +29,7 @@ This repository contains the following files and folders:
       - **val**: A directory with validation set of images (used by metric_calculator.py)
     - **labels**
       - **val**: A directory with validation set of annotations (used by metric_calculator.py)
-- **YOLO_paras**
+- **YOLO_paras**: Data and code for YOLOinfected model
   - **YOLO_train.py**: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
   - **best.pt**: Weights of the trained model
   - **YOLO_paras_counter_v2.2.py**: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns _a)_ a .csv file with cell counts and _b)_ a directory with annotated images. Counts infected RBC. Do not classify parasites.
@@ -44,12 +44,19 @@ This repository contains the following files and folders:
   - **YOLO1.5b_RBC_main2.csv**: Helthy RBC counts
   - **YOLO2.23l_paras_main2.csv**: Infected RBC counts
   - **horm.scv**: ELISA results
+  - **paras.csv**: Integrates data from YOLO1.5b_RBC_main2.csv and YOLO2.23l_paras_main2.csv. Outputed from RedQueen_dataprep.R
   - **metdata.csv**: Animals' metadata (body mass, SVL, sex, species, date and site of collection)
   - **main_check.csv**: The table containing all the data, including sex steroids concentration and manually checked cell counts
-- 
+- **RedQueen_dataprep.R**: Integrates horm.csv, metadata.csv and cell counts into a single table
+- **RedQueen_main.R**: Main statistical pipline. !!! Alpha version !!!
+- **RedQueen_quality_metrics.R**: Quality metrics of YOLOrbc and YOLOinfected models (FP/TP/FN, F1 etc.). !!! Alpha version !!!
+- **README.md**: This readme 
 
- 
+# Results
+
+# Example output of YOLOinfected
 <img width="2592" height="1944" alt="WIN_20240601_12_35_17_Pro" src="https://github.com/user-attachments/assets/1ae660ab-ae62-4cb9-b188-47d6f927e789" />
+
+# Example output of YOLOrbc
 <img width="2592" height="1944" alt="WIN_20240601_12_35_17_Pro" src="https://github.com/user-attachments/assets/a6bbcec8-cb7a-4525-92ee-cd2b83eecf70" />
 
-Effect of reproduction mode and sex steroids on parasitic load in rock lizards
