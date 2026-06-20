@@ -1,16 +1,16 @@
 library(tidyverse)
 library(gsheet)
 
-RBC<-read.csv('C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO/YOLO1.5b_RBC_main.csv',
+RBC<-read.csv('C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO/YOLO1.5b_RBC_main2.csv',
               header = T)
 
-par<-read.csv('C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO2/YOLO2.23l_paras_main.csv',
+par<-read.csv('C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO2/YOLO2.23l_paras_main2.csv',
               header = T)
 
-info<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1phJF3SIh4vYH4veFIIPXO4liYLwIhjT2IB4tKADEvVY/edit?gid=0#gid=0')
+info<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1iC9XA06jhmk0V_LYnQzpbVzkRmqKg5iJ_IlcHV2bFUg/edit?gid=0#gid=0')
 info$id<-toupper(info$id)
 
-horm<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1yV5bYRdBF2ZXfbRYaYdwOyKJkQUJZwyh8XaKsE-WblU/edit?gid=1878781406#gid=1878781406')
+horm<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1iC9XA06jhmk0V_LYnQzpbVzkRmqKg5iJ_IlcHV2bFUg/edit?gid=212620556#gid=212620556')
 horm$id<-toupper(horm$id)
 
 df<-full_join(RBC, par) %>%
@@ -47,38 +47,28 @@ info_horm<-info %>%
          horm.x = NULL,
          horm.y = NULL)
 
-#| df saved to paras_data.csv
-#| SHM ids adjusted manually (unknown ids in df),
+#write.csv(df, file = './paras_data.csv')
+#| df saved to paras_data.csv,
+#| adjusted manually,
 #| then reimported from google sheets
 
-df<-gsheet2tbl('https://docs.google.com/spreadsheets/d/189B01EGPUuOkPhl6dgqgogl-KbkwKqCL-OoyHos__pg/edit?usp=sharing')
+df<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1iC9XA06jhmk0V_LYnQzpbVzkRmqKg5iJ_IlcHV2bFUg/edit?gid=1142253146#gid=1142253146')
 
-RBC<-read.csv('C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO/YOLO1.5b_RBC_main2.csv',
-              header = T)
-
-par<-read.csv('C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO2/YOLO2.23l_paras_main2.csv',
-              header = T)
-
-df1<-full_join(RBC, par) %>%
-  mutate(sum = RBC + hcRBC + lysRBC + paras,
-         prop = paras/sum,
-         id = str_replace_all(id, '__', '_')) %>%
-  separate(id, c('id', 'sp', 'sex', 'date'), sep = '_') %>%
-  mutate(id = toupper(id),
-         timepoint = str_sub(date, 3, 6))
-
-df<-rbind(df, df1)
-
-df.knowndate<-subset(df, timepoint != 'mmyy')
-df.unknowndate<-subset(df, timepoint == 'mmyy')
+df.knowndate<-subset(df, str_detect(id, 'ASH') & timepoint != 'mmyy')
+df.unknowndate<-subset(df, !(str_detect(id, 'ASH') & timepoint != 'mmyy'))
 
 df<-info_horm %>%
   full_join(df.knowndate, by = join_by(id, timepoint)) %>%
   full_join(df.unknowndate, by = join_by(id)) %>%
-  subset(!is.na(sp.x)) %>%
-  mutate(sp = sp.x,
-         sex = sex.x,
-         date = date.x,
+  mutate(sp = case_when(is.na(sp.x) & !is.na(sp.y) ~ sp.y,
+                        is.na(sp.x) & is.na(sp.y) ~ sp,
+                        .default = sp.x),
+         sex = case_when(is.na(sex.x) & !is.na(sex.y) ~ sex.y,
+                        is.na(sex.x) & is.na(sex.y) ~ sex,
+                        .default = sex.x),
+         date = case_when(is.na(date.x) & !is.na(date.y) ~ date.y,
+                         is.na(date.x) & is.na(date.y) ~ date,
+                         .default = date.x),
          RBC = case_when(is.na(RBC.x) ~ RBC.y,
                          is.na(RBC.y) ~ RBC.x),
          hcRBC = case_when(is.na(hcRBC.x) ~ hcRBC.y,
@@ -111,4 +101,7 @@ df<-info_horm %>%
          sum.x = NULL,
          sum.y = NULL,
          timepoint.x = NULL,
-         timepoint.y = NULL)
+         timepoint.y = NULL) %>%
+  subset(!is.na(sp))
+
+write.csv(df, file = './RedQueen_data.csv')
