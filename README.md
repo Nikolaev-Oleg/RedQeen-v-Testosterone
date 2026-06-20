@@ -18,9 +18,10 @@ This repository contains the following files and folders:
   - **YOLO_train.py**: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
   - **best.pt**: Weights of the trained model
   - **YOLO_RBC_counter_v1.2.py**: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns
-                              1) a .csv file with cell counts
-                              2) a directory with annotated images.
-                              By default, distinguishes normal RBC, heterochromatic RBC (hcRBC) and RBC in a process of cell lysis (lysRBC)
+
+                                  1) a .csv file with cell counts
+                                  2) a directory with annotated images.
+                                  By default, distinguishes normal RBC, heterochromatic RBC (hcRBC) and RBC in a process of cell lysis (lysRBC)
   - **metric_calculator.py**: Computes the model performance metrics based on validation dataset. In particular, was used for optimal confedence selection
   - **metrics_out.csv**: The output of metric_calculator.py
   - **data**
