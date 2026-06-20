@@ -1,16 +1,18 @@
 library(tidyverse)
 library(gsheet)
 
-RBC<-read.csv('C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO/YOLO1.5b_RBC_main2.csv',
+RBC<-read.csv('./YOLO_RBC/YOLO1.5b_RBC_main2.csv',
               header = T)
 
-par<-read.csv('C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO2/YOLO2.23l_paras_main2.csv',
+par<-read.csv('./YOLO_paras/YOLO2.23l_paras_main2.csv',
               header = T)
 
-info<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1iC9XA06jhmk0V_LYnQzpbVzkRmqKg5iJ_IlcHV2bFUg/edit?gid=0#gid=0')
+info<-read.csv('./data/metadata.csv',
+               header = T)
 info$id<-toupper(info$id)
 
-horm<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1iC9XA06jhmk0V_LYnQzpbVzkRmqKg5iJ_IlcHV2bFUg/edit?gid=212620556#gid=212620556')
+horm<-read.csv('./data/horm.csv',
+               header = T)
 horm$id<-toupper(horm$id)
 
 df<-full_join(RBC, par) %>%
@@ -52,7 +54,8 @@ info_horm<-info %>%
 #| adjusted manually,
 #| then reimported from google sheets
 
-df<-gsheet2tbl('https://docs.google.com/spreadsheets/d/1iC9XA06jhmk0V_LYnQzpbVzkRmqKg5iJ_IlcHV2bFUg/edit?gid=1142253146#gid=1142253146')
+df<-read.csv('./data/paras.csv',
+               header = T)
 
 df.knowndate<-subset(df, str_detect(id, 'ASH') & timepoint != 'mmyy')
 df.unknowndate<-subset(df, !(str_detect(id, 'ASH') & timepoint != 'mmyy'))
