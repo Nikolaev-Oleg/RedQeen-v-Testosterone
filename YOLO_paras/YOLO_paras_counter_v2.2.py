@@ -5,8 +5,8 @@ from ultralytics import YOLO
 import pandas as pd
 import shutil
 
-model = YOLO("C:/Users/nikol/OneDrive/Рабочий стол/Статьи в работе/Haemogregarina/YOLO2/runs/detect/train23/weights/last.pt")
-root_dir = 'C:/Users/nikol/OneDrive/Изображения/Пленка'
+model = YOLO("./last.pt")
+root_dir = 'root/directory'
 
 dirs = [f'{root_dir}/{d.name}' for d in os.scandir(root_dir) if d.is_dir()]
 
