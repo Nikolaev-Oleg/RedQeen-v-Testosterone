@@ -5,7 +5,7 @@ from ultralytics import YOLO
 import pandas as pd
 import shutil
 
-model = YOLO("./last.pt")
+model = YOLO("./best.pt")
 root_dir = 'root/directory'
 
 dirs = [f'{root_dir}/{d.name}' for d in os.scandir(root_dir) if d.is_dir()]
