@@ -60,7 +60,8 @@ This repository contains the following files and folders:
 # Example output of YOLOrbc
 <img width="2592" height="1944" alt="WIN_20240601_12_35_17_Pro" src="https://github.com/user-attachments/assets/a6bbcec8-cb7a-4525-92ee-cd2b83eecf70" />
 
-**Model quality metrics**
+# Model quality metrics
+
 - **YOLOrbc:** AUPRC 0.95
 - **YOLOinfected:** AUPRC 0.94
 
