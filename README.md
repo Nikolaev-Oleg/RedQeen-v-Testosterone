@@ -65,7 +65,7 @@ This repository contains the following files and folders:
 - **YOLOinfected:** AUPRC 0.94
 
 <img width="1500" height="1500" alt="Fig1" src="https://github.com/user-attachments/assets/907e6798-6c6b-4137-81d2-183b64d17aa0" />
-Performance metrics of YOLOrbc and YOLOinfected models: reciever-operator curves for both models (a), F1 ~ Confidence curves for YOLOrbc (b), and YOLOinfected (d). We manually checked counts of healthy (e) and infected (f) RBC returned by he models as well as the proportion of infected RBC (g), and found sufficient concordance between automated and manual image processing. 
+_Performance metrics of YOLOrbc and YOLOinfected models: reciever-operator curves for both models (a), F1 ~ Confidence curves for YOLOrbc (b), and YOLOinfected (c). We manually checked counts of healthy (d) and infected (e) RBC returned by he models as well as the proportion of infected RBC (f), and found sufficient concordance between automated and manual image processing._ 
 
 # Data availability
 We cannot attach all the images and model weights to this repository due to great number and size of the files. However, we would be glad to share them by request:
