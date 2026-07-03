@@ -1,4 +1,4 @@
-#Packages ####
+# Packages ####
 library(tidyverse)
 library(dunn.test)
 library(ggpubr)
@@ -6,8 +6,9 @@ library(cowplot)
 library(ARTool) 
 library(emmeans)
 library(glue)
+library(ggeasy)
 
-#Prepare data ####
+# Prepare data ####
 
 df.full <- read.csv('./data/main_check.csv',
                    header = T) %>%
@@ -25,7 +26,8 @@ df.full <- read.csv('./data/main_check.csv',
                                .default = 0),
          prop = (paras+check_par)/check_sum,
          timepoint = as.factor(timepoint)) %>%
-  subset(timepoint != '0822') # only two points
+  subset(timepoint != '0822') %>% # only two points
+  subset(sex == 'm' | sex == 'f') # remove observations with unidentified sex
 df.horm_v_prop <- subset(df.full, !is.na(horm) & !is.na(prop))
 df.horm <- subset(df.full, !is.na(horm))
 df.prop <- subset(df.full, !is.na(prop) & check_sum >= 1000)
@@ -47,14 +49,14 @@ gg.horm_v_prop<-subset(df.horm_v_prop, loc == 'gar-gar')
 sr.horm_v_prop<-subset(df.horm_v_prop, loc == 'sepasar river')
 sh.horm_v_prop<-subset(df.horm_v_prop, loc == 'sepasar hill')
 hr.horm_v_prop<-subset(df.horm_v_prop, loc == 'hrazdan restaurant')
-#AC ####
-#Hormones through time points ####
+# AC ...................................................................... ####
+# Hormones through time points ####
 with(subset(ac.horm, group =='f_D.armeniaca'), dunn.test(horm, timepoint, method = 'holm'))
 with(subset(ac.horm, group =='f_D.dahli'), dunn.test(horm, timepoint, method = 'holm'))
 with(subset(ac.horm, group =='f_D.portschinskii'), dunn.test(horm, timepoint, method = 'holm'))
 with(subset(ac.horm, group =='m_D.portschinskii'), dunn.test(horm, timepoint, method = 'holm'))
 
-#Hormones between species ####
+# Hormones between species ####
 art<-art(horm~group+Error(timepoint),
          data = subset(ac.horm, sp !='DportXDdah' & sex != 'm') %>% # too few observations on hybrids
            mutate(group = as.factor(group),
@@ -93,7 +95,7 @@ Fig2f<-ggplot(subset(ac.horm, sp !='DportXDdah' & sex == 'm'), aes(timepoint, ho
   ggtitle('f')+
   scale_x_discrete(labels = c('May 2023', 'June 2023', 'September 2023'))
 
-#Parasitic load between species ####
+# Parasitic load between species ####
 art<-art(prop~group+Error(timepoint),
     data = subset(ac.prop, sp !='DportXDdah') %>%
       mutate(group = as.factor(group),
@@ -117,14 +119,14 @@ Fig2a<-ggplot(subset(ac.prop, sp !='DportXDdah'), aes(timepoint, prop))+
   scale_colour_manual(values = c('#eebb22', '#2288cc', '#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#eebb22', '#2288cc', '#cc4411', '#44cc66'))
 
-#Parasitic load through time points####
+# Parasitic load through time points ####
 #| No difference between time points were observed for any species
 with(subset(ac.prop, group =='f_D.armeniaca'), dunn.test(prop, timepoint))
 with(subset(ac.prop, group =='f_D.dahli'), dunn.test(prop, timepoint))
 with(subset(ac.prop, group =='f_D.portschinskii'), dunn.test(prop, timepoint))
 with(subset(ac.prop, group =='m_D.portschinskii'), dunn.test(prop, timepoint))
 
-#Parasitic load v sex steroids####
+# Parasitic load v sex steroids ####
 #|No significant correlation was observed between sex steroids concentration
 #|and parasitic load in either species
 
@@ -149,8 +151,14 @@ with(subset(ac.prop, group =='m_D.portschinskii' & timepoint == '0623'), cor.tes
 with(subset(ac.prop, group =='m_D.portschinskii' & timepoint == '0923'), cor.test(prop,horm, method = 'spearman')) # R = -.27; p =.44
 
 Fig2c<-ggplot(subset(ac.horm_v_prop, sp !='DportXDdah' & group !='m_D.portschinskii'), aes(horm, prop))+
-  geom_smooth(aes(colour = group, linetype = timepoint), linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(fill = group, shape = timepoint), size = 2.5, stroke = 1)+
+  geom_smooth(aes(colour = group),
+              linewidth = 1,
+              se = F,
+              method = 'lm')+
+  geom_point(aes(fill = group),
+             size = 2.5,
+             stroke = 1,
+             shape = 21)+
   theme_classic()+
   theme(legend.position = 'none',
         axis.title = element_text(size = 14, face = 'bold'),
@@ -159,19 +167,17 @@ Fig2c<-ggplot(subset(ac.horm_v_prop, sp !='DportXDdah' & group !='m_D.portschins
   ylab('Parasitic load')+
   ggtitle('c')+
   scale_colour_manual(values = c('#eebb22', '#2288cc', '#cc4411'))+
-  scale_fill_manual(values = c('#eebb22', '#2288cc', '#cc4411'))+
-  scale_shape_manual(values = c(21, 22, 24),
-                     labels = c('May 2023', 'June 2023', 'September 2023'),
-                     name = 'Time point')+
-  scale_linetype_manual(values = c(1,2,3),
-                        labels = c('May 2023', 'June 2023', 'September 2023'),
-                        name = 'Time point')
+  scale_fill_manual(values = c('#eebb22', '#2288cc', '#cc4411'))
 
 Fig2d<-ggplot(subset(ac.horm_v_prop, group =='m_D.portschinskii'), aes(horm, prop))+
-  geom_smooth(aes(linetype = timepoint),
-              colour = '#44cc66', linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(shape = timepoint),
-             fill = '#44cc66', size = 2.5, stroke = 1)+
+  geom_smooth(colour = '#44cc66',
+              linewidth = 1,
+              se = F,
+              method = 'lm')+
+  geom_point(fill = '#44cc66',
+             size = 2.5,
+             stroke = 1,
+             shape = 21)+
   theme_classic()+
   theme(legend.position = 'none',
         legend.title = element_text(size = 14, face = 'bold'),
@@ -181,15 +187,9 @@ Fig2d<-ggplot(subset(ac.horm_v_prop, group =='m_D.portschinskii'), aes(horm, pro
         legend.key.width = unit(2, 'cm'))+
   xlab('Testosterone concentration, ng/mL')+
   ylab('Parasitic load')+
-  ggtitle('d')+
-  scale_shape_manual(values = c(21, 22, 24),
-                     labels = c('May 2023', 'June 2023', 'September 2023'),
-                     name = 'Time point')+
-  scale_linetype_manual(values = c(1,2,3),
-                        labels = c('May 2023', 'June 2023', 'September 2023'),
-                        name = 'Time point')
+  ggtitle('d')
 
-#Body condition v parasitic load####
+# Body condition v parasitic load ####
 #| SVL ~ m is close to linearity, so we can use proportion as a measure of
 #| the body condition.
 #| No significant effect of parasitic load on body condition was observed
@@ -226,7 +226,121 @@ Fig2b<-ggplot(subset(ac.prop, sp !='DportXDdah'), aes(bc, prop))+
   scale_colour_manual(values = c('#eebb22', '#2288cc', '#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#eebb22', '#2288cc', '#cc4411', '#44cc66'))
 
-#Fig2####
+# Infection prevalence between species ####
+ac.arm.prev <- ac.prop %>%
+  subset(group == 'f_D.armeniaca') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(darm = n(), .groups = 'keep')
+
+ac.dah.prev <- ac.prop %>%
+  subset(group == 'f_D.dahli') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(ddah = n(), .groups = 'keep')
+
+ac.fpor.prev <- ac.prop %>%
+  subset(group == 'f_D.portschinskii') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(fpor = n(), .groups = 'keep')
+
+ac.mpor.prev <- ac.prop %>%
+  subset(group == 'm_D.portschinskii') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(mpor = n(), .groups = 'keep')
+
+fisher.p <- c()
+x <- full_join(ac.arm.prev, ac.dah.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(ac.arm.prev, ac.fpor.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+  
+x <- full_join(ac.arm.prev, ac.mpor.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(ac.dah.prev, ac.fpor.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(ac.dah.prev, ac.mpor.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(ac.fpor.prev, ac.mpor.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+names(fisher.p) <- c('Darm v Ddah', 'Darm v Dport_f', 'Darm v Dport_m', 
+                     'Ddah v Dport_f', 'Ddah v Dport_m',
+                     'Dport_f v Dport_m')
+fisher.p <- p.adjust(fisher.p, method = 'holm')
+fisher.p
+
+Fig2g1 <- ggplot(ac.arm.prev, aes(infected, darm/sum(darm)))+
+  geom_col(fill = '#eebb22',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 14, face = 'bold'))+
+  ylim(c(0, 1))+
+  ylab('Prevalence')+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig2g2 <- ggplot(ac.dah.prev, aes(infected, ddah/sum(ddah)))+
+  geom_col(fill = '#2288cc',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank())+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig2g3 <- ggplot(ac.fpor.prev, aes(infected, fpor/sum(fpor)))+
+  geom_col(fill = '#cc4411',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank())+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig2g4 <- ggplot(ac.mpor.prev, aes(infected, mpor/sum(mpor)))+
+  geom_col(fill = '#44cc66',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        plot.title = element_text(size = 16, face = 'bold', hjust = .8))+
+  ggtitle('g')+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+
+Fig2g <- plot_grid(Fig2g1, Fig2g2, Fig2g3, Fig2g4,
+                   nrow = 1,
+                   align = 'hv',
+                   axis = 'tb')
+# Fig2####
 legend.plot<-ggplot(subset(ac.prop, sp !='DportXDdah'), aes(svl, m))+
   geom_point(aes(fill = group), shape = 21, size = 5.5, stroke = 1.2)+
   theme_classic()+
@@ -244,54 +358,28 @@ legend.plot<-ggplot(subset(ac.prop, sp !='DportXDdah'), aes(svl, m))+
                                ),
                     name = 'Cohort')
 
-legend<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
-
-legend.plot<-ggplot(subset(ac.horm_v_prop, group =='m_D.portschinskii'), aes(horm, prop))+
-  geom_smooth(aes(linetype = timepoint),
-              colour = 'gray70', linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(shape = timepoint),
-             fill = 'gray80', size = 3.5, stroke = 1)+
-  theme_classic()+
-  theme(legend.position = 'top',
-        legend.title = element_text(size = 14, face = 'bold'),
-        legend.text = element_text(size = 12),
-        axis.title = element_text(size = 14, face = 'bold'),
-        plot.title = element_text(size = 16, face = 'bold', hjust = .9),
-        legend.key.width = unit(2, 'cm'),
-        legend.margin = margin(0, 0, 0, 0),
-        legend.spacing = unit(0, "cm"),
-        legend.box.spacing = unit(0, "cm"))+
-  xlab('Testosterone concentration, ng/mL')+
-  ylab('Parasitic load')+
-  ggtitle('c')+
-  scale_shape_manual(values = c(21, 22, 24),
-                     labels = c('May 2023', 'June 2023', 'September 2023'),
-                     name = 'Time of collection')+
-  scale_linetype_manual(values = c(1,2,3),
-                        labels = c('May 2023', 'June 2023', 'September 2023'),
-                        name = 'Time of collection')
-
-legend2<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
+leg2<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
 
 Fig2<-ggarrange(Fig2a, Fig2b, Fig2c, Fig2d, Fig2e, Fig2f,
           ncol = 2,
           nrow = 3,
           align = 'hv')
-leg2<-ggarrange(legend, legend2, nrow = 1)
+Fig2 <- plot_grid(Fig2, Fig2g,
+                  ncol = 1,
+                  rel_heights = c(0.8, 0.2))
 
 plot_grid(Fig2, leg2,
           ncol = 1,
           rel_heights = c(0.95, 0.05))
 
-################################################################################
-#HR####
-#Hormones through time points####
+# HR....................................................................... ####
+# Hormones through time points ####
 with(subset(hr.horm, group =='f_D.armeniaca'), wilcox.test(horm ~ timepoint))
 with(subset(hr.horm, group =='f_D.unisexualis'), wilcox.test(horm ~ timepoint))
 with(subset(hr.horm, group =='f_D.nairensis'), wilcox.test(horm ~ timepoint))
 with(subset(hr.horm, group =='m_D.nairensis'), wilcox.test(horm ~ timepoint))
 
-#Hormones between species####
+# Hormones between species ####
 art<-art(horm~group+Error(timepoint),
          data = subset(hr.horm, sex == 'f') %>%
            mutate(group = as.factor(group),
@@ -332,7 +420,7 @@ Fig3f<-ggplot(subset(hr.horm, sex == 'm'), aes(timepoint, horm))+
   scale_x_discrete(labels = c('June 2023', 'September 2023'))
 
 
-#Parasitic load between species####
+# Parasitic load between species ####
 #| Two-way ANOVA was applied as a robust method
 #| parthenogenetic species were the most parasitized cohorts
 #| followed by male D. portschinskii
@@ -366,14 +454,14 @@ Fig3a<-ggplot(hr.prop, aes(timepoint, prop))+
   scale_colour_manual(values = c('#eebb22', '#2288cc', '#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#eebb22', '#2288cc', '#cc4411', '#44cc66'))
 
-#Parasitic load through time points####
+# Parasitic load through time points ####
 #| No difference between time points were observed for any species
 
 with(subset(hr.prop, group =='f_D.armeniaca'), dunn.test(prop, timepoint))
 with(subset(hr.prop, group =='f_D.unisexualis'), dunn.test(prop, timepoint))
 with(subset(hr.prop, group =='f_D.nairensis'), dunn.test(prop, timepoint))
 with(subset(hr.prop, group =='m_D.nairensis'), dunn.test(prop, timepoint))
-#Parasitic load v sex steroids####
+# Parasitic load v sex steroids ####
 
 with(subset(hr.prop, group =='f_D.armeniaca'), cor.test(prop,horm, method = 'spearman')) # R = .36; p =.04
 with(subset(hr.prop, group =='f_D.armeniaca' & timepoint == '0623'), cor.test(prop,horm, method = 'spearman')) # R = .08; p =.75
@@ -392,8 +480,14 @@ with(subset(hr.prop, group =='m_D.nairensis' & timepoint == '0623'), cor.test(pr
 with(subset(hr.prop, group =='m_D.nairensis' & timepoint == '0923'), cor.test(prop,horm, method = 'spearman')) # R = .24; p =.34
 
 Fig3c<-ggplot(subset(hr.prop, group !='m_D.nairensis' & timepoint != '0523'), aes(horm, prop))+
-  geom_smooth(aes(colour = group, linetype = timepoint), linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(fill = group, shape = timepoint), size = 2.5, stroke = 1)+
+  geom_smooth(aes(colour = group),
+              linewidth = 1,
+              se = F,
+              method = 'lm')+
+  geom_point(aes(fill = group),
+             size = 2.5,
+             stroke = 1,
+             shape = 21)+
   theme_classic()+
   theme(legend.position = 'none',
         axis.title = element_text(size = 14, face = 'bold'),
@@ -402,35 +496,27 @@ Fig3c<-ggplot(subset(hr.prop, group !='m_D.nairensis' & timepoint != '0523'), ae
   ylab('Parasitic load')+
   ggtitle('c')+
   scale_colour_manual(values = c('#eebb22', '#2288cc', '#cc4411'))+
-  scale_fill_manual(values = c('#eebb22', '#2288cc', '#cc4411'))+
-  scale_shape_manual(values = c(22, 24),
-                     labels = c('June 2023', 'September 2023'),
-                     name = 'Time point')+
-  scale_linetype_manual(values = c(2,3),
-                        labels = c('June 2023', 'September 2023'),
-                        name = 'Time point')
+  scale_fill_manual(values = c('#eebb22', '#2288cc', '#cc4411'))
 
 Fig3d<-ggplot(subset(hr.prop, group =='m_D.nairensis' & timepoint != '0523'), aes(horm, prop))+
-  geom_smooth(aes(linetype = timepoint),
-              colour = '#44cc66', linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(shape = timepoint),
-             fill = '#44cc66', size = 2.5, stroke = 1)+
+  geom_smooth(colour = '#44cc66',
+              linewidth = 1,
+              se = F,
+              method = 'lm')+
+  geom_point(shape = 21,
+             fill = '#44cc66',
+             size = 2.5,
+             stroke = 1)+
   theme_classic()+
   theme(legend.position = 'none',
         axis.title = element_text(size = 14, face = 'bold'),
         plot.title = element_text(size = 16, face = 'bold', hjust = .9))+
   xlab('Testosterone concentration, ng/mL')+
   ylab('Parasitic load')+
-  ggtitle('d')+
-  scale_shape_manual(values = c(22, 24),
-                     labels = c('June 2023', 'September 2023'),
-                     name = 'Time point')+
-  scale_linetype_manual(values = c(2,3),
-                        labels = c('June 2023', 'September 2023'),
-                        name = 'Time point')
+  ggtitle('d')
 
 
-#Body condition v parasitic load####
+# Body condition v parasitic load ####
 ggplot(hr.prop, aes(svl, m))+
   geom_smooth(aes(colour = factor(group, levels = c("f_D.armeniaca", "f_D.unisexualis", "f_D.nairensis", "m_D.nairensis"))), linewidth = 1, se = F, method = 'lm')+
   geom_point(aes(fill = factor(group, levels = c("f_D.armeniaca", "f_D.unisexualis", "f_D.nairensis", "m_D.nairensis"))), shape = 21, size = 2.5, stroke = 1)+
@@ -462,7 +548,123 @@ Fig3b<-ggplot(hr.prop, aes(bc, prop))+
   ggtitle('b')+
   scale_colour_manual(values = c('#eebb22', '#2288cc', '#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#eebb22', '#2288cc', '#cc4411', '#44cc66'))
-#Fig3####
+# Infection prevalence between species ####
+hr.arm.prev <- hr.prop %>%
+  subset(group == 'f_D.armeniaca') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(darm = n(), .groups = 'keep')
+
+hr.uni.prev <- hr.prop %>%
+  subset(group == 'f_D.unisexualis') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(duni = n(), .groups = 'keep')
+
+hr.fnai.prev <- hr.prop %>%
+  subset(group == 'f_D.nairensis') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(fnai = n(), .groups = 'keep')
+hr.fnai.prev <- rbind(hr.fnai.prev, data_frame(infected = 'healthy', fnai = 0))
+
+hr.mnai.prev <- hr.prop %>%
+  subset(group == 'm_D.nairensis') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(mnai = n(), .groups = 'keep')
+
+fisher.p <- c()
+x <- full_join(hr.arm.prev, hr.uni.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(hr.arm.prev, hr.fnai.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(hr.arm.prev, hr.mnai.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(hr.uni.prev, hr.fnai.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(hr.uni.prev, hr.mnai.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(hr.fnai.prev, hr.mnai.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+names(fisher.p) <- c('Darm v Duni', 'Darm v Dnai_f', 'Darm v Dnai_m', 
+                     'Duni v Dnai_f', 'Duni v Dnai_m',
+                     'Dnai_f v Dnai_m')
+fisher.p <- p.adjust(fisher.p, method = 'holm')
+fisher.p
+
+Fig3g1 <- ggplot(hr.arm.prev, aes(infected, darm/sum(darm)))+
+  geom_col(fill = '#eebb22',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 14, face = 'bold'))+
+  ylim(c(0, 1))+
+  ylab('Prevalence')+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig3g2 <- ggplot(hr.uni.prev, aes(infected, duni/sum(duni)))+
+  geom_col(fill = '#2288cc',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank())+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig3g3 <- ggplot(hr.fnai.prev, aes(infected, fnai/sum(fnai)))+
+  geom_col(fill = '#cc4411',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank())+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig3g4 <- ggplot(hr.mnai.prev, aes(infected, mnai/sum(mnai)))+
+  geom_col(fill = '#44cc66',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        plot.title = element_text(size = 16, face = 'bold', hjust = .8))+
+  ggtitle('g')+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+
+Fig3g <- plot_grid(Fig3g1, Fig3g2, Fig3g3, Fig3g4,
+                   nrow = 1,
+                   align = 'hv',
+                   axis = 'tb')
+
+# Fig3 ####
 legend.plot<-ggplot(hr.prop, aes(svl, m))+
   geom_point(aes(fill = factor(group, levels = c("f_D.armeniaca", "f_D.unisexualis", "f_D.nairensis", "m_D.nairensis"))), shape = 21, size = 5.5, stroke = 1.2)+
   theme_classic()+
@@ -477,49 +679,22 @@ legend.plot<-ggplot(hr.prop, aes(svl, m))+
                     ),
                     name = 'Cohort')
 
-legend<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
-
-legend.plot<-ggplot(subset(hr.horm_v_prop, group =='m_D.nairensis'), aes(horm, prop))+
-  geom_smooth(aes(linetype = timepoint),
-              colour = 'gray70', linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(shape = timepoint),
-             fill = 'gray80', size = 3.5, stroke = 1)+
-  theme_classic()+
-  theme(legend.position = 'top',
-        legend.title = element_text(size = 14, face = 'bold'),
-        legend.text = element_text(size = 12),
-        axis.title = element_text(size = 14, face = 'bold'),
-        plot.title = element_text(size = 16, face = 'bold', hjust = .9),
-        legend.key.width = unit(2, 'cm'),
-        legend.margin = margin(0, 0, 0, 0),
-        legend.spacing = unit(0, "cm"),
-        legend.box.spacing = unit(0, "cm"))+
-  xlab('Testosterone concentration, ng/mL')+
-  ylab('Parasitic load')+
-  ggtitle('c')+
-  scale_shape_manual(values = c(22, 24),
-                     labels = c('June 2023', 'September 2023'),
-                     name = 'Time of collection')+
-  scale_linetype_manual(values = c(2,3),
-                        labels = c('June 2023', 'September 2023'),
-                        name = 'Time of collection')
-
-legend2<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
+leg3<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
 
 Fig3<-ggarrange(Fig3a, Fig3b, Fig3c, Fig3d, Fig3e, Fig3f,
                 ncol = 2,
                 nrow = 3,
                 align = 'hv')
-leg3<-ggarrange(legend, legend2, nrow = 1)
+Fig3 <- plot_grid(Fig3, Fig3g,
+                  ncol = 1,
+                  rel_heights = c(0.8, 0.2))
 
 plot_grid(Fig3, leg3,
           ncol = 1,
           rel_heights = c(0.95, 0.05))
 
-
-################################################################################
-#GG####
-#Hormones between species####
+# GG ...................................................................... ####
+# Hormones between species ####
 with(subset(gg.horm, sp != 'DportXDdah' & sex == 'f'), wilcox.test(horm~sp))
 
 Fig4e<-ggplot(subset(gg.horm, sp !='DportXDdah' & sex == 'f'), aes(sp, horm))+
@@ -541,14 +716,9 @@ Fig4e<-ggplot(subset(gg.horm, sp !='DportXDdah' & sex == 'f'), aes(sp, horm))+
   scale_fill_manual(values = c('#2288cc', '#cc4411'))
 
 
-#Parasitic load between species####
-#| Two-way ANOVA was applied as a robust method
-#| parthenogenetic species were the most parasitized cohorts
-#| followed by male D. portschinskii
-#| However, KW-test did not show any sinificant differences
-#| when processing each timepoint separately (probably due to low power)
-
+# Parasitic load between species ####
 with(subset(gg.prop, sp !='DportXDdah'), dunn.test(prop, group))
+gg.prop$group <- factor(gg.prop$group, levels = c('f_D.dahli', 'f_D.portschinskii', 'm_D.portschinskii'))
 
 Fig4a<-ggplot(subset(gg.prop, sp !='DportXDdah'), aes(group, prop))+
   geom_boxplot(aes(colour = group), linewidth = 1,
@@ -569,7 +739,7 @@ Fig4a<-ggplot(subset(gg.prop, sp !='DportXDdah'), aes(group, prop))+
   scale_colour_manual(values = c('#2288cc', '#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#2288cc', '#cc4411', '#44cc66'))
 
-#Parasitic load v sex steroids####
+# Parasitic load v sex steroids ####
 #|No significant correlation was observed between sex steroids concentration
 #|and parasitic load in either species
 
@@ -601,7 +771,7 @@ Fig4c<-ggplot(subset(gg.prop, group =='m_D.portschinskii'), aes(horm, prop))+
   ylab('Parasitic load')+
   ggtitle('c')
 
-#Body condition v parasitic load####
+# Body condition v parasitic load ####
 #| SVL ~ m is close to linearity, so we can use proportion as a measure of
 #| the body condition.
 #| No significant effect of parasitic load on body condition was observed
@@ -637,7 +807,91 @@ Fig4d<-ggplot(subset(gg.prop, sp !='DportXDdah'), aes(bc, prop))+
   scale_colour_manual(values = c('#2288cc', '#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#2288cc', '#cc4411', '#44cc66'))
 
-#Fig4####
+# Infection prevalence between species ####
+gg.dah.prev <- gg.prop %>%
+  subset(group == 'f_D.dahli') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(ddah = n(), .groups = 'keep')
+gg.dah.prev <- rbind(gg.dah.prev, data_frame(infected = 'healthy', ddah = 0))
+
+gg.fpor.prev <- gg.prop %>%
+  subset(group == 'f_D.portschinskii') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(fpor = n(), .groups = 'keep')
+
+gg.mpor.prev <- gg.prop %>%
+  subset(group == 'm_D.portschinskii') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(mpor = n(), .groups = 'keep')
+
+fisher.p <- c()
+
+x <- full_join(gg.dah.prev, gg.fpor.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(gg.dah.prev, gg.mpor.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(gg.fpor.prev, gg.mpor.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+names(fisher.p) <- c('Ddah v Dport_f', 'Ddah v Dport_m',
+                     'Dport_f v Dport_m')
+fisher.p <- p.adjust(fisher.p, method = 'holm')
+fisher.p
+
+Fig4e1 <- ggplot(gg.dah.prev, aes(infected, ddah/sum(ddah)))+
+  geom_col(fill = '#2288cc',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 14, face = 'bold'))+
+  ylim(c(0, 1))+
+  ylab('Prevalence')+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig4e2 <- ggplot(gg.fpor.prev, aes(infected, fpor/sum(fpor)))+
+  geom_col(fill = '#cc4411',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank())+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig4e3 <- ggplot(gg.mpor.prev, aes(infected, mpor/sum(mpor)))+
+  geom_col(fill = '#44cc66',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        plot.title = element_text(size = 16, face = 'bold', hjust = .85))+
+  ggtitle('e')+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+
+Fig4e <- plot_grid(Fig4e1, Fig4e2, Fig4e3,
+                   nrow = 1,
+                   align = 'hv',
+                   axis = 'tb')
+
+# Fig4 ####
 legend.plot<-ggplot(subset(gg.prop, sp !='DportXDdah'), aes(svl, m))+
   geom_point(aes(fill = group), shape = 21, size = 5.5, stroke = 1.2)+
   theme_classic()+
@@ -657,14 +911,18 @@ Fig4 <- ggarrange(Fig4a, Fig4b, Fig4c, Fig4d,
           ncol = 2,
           nrow = 2,
           align = 'hv',
-          heights = c(4,4,4,4,1))
+          heights = c(4,4,4,4))
+
+Fig4 <- plot_grid(Fig4, Fig4e,
+                  ncol = 1,
+                  rel_heights = c(0.8, 0.2))
 
 plot_grid(Fig4, leg4,
           ncol = 1,
           rel_heights = c(0.95, 0.05))
-################################################################################
-#SH####
-#Hormones through time points####
+
+# SH....................................................................... ####
+# Hormones through time points ####
 with(subset(sh.horm, group =='f_D.valentini'), wilcox.test(horm ~ timepoint))
 with(subset(sh.horm, group =='m_D.valentini'), wilcox.test(horm ~ timepoint))
 
@@ -695,7 +953,7 @@ Fig5f<-ggplot(subset(sh.horm, sex == 'm'), aes(timepoint, horm))+
   scale_x_discrete(labels = c('May 2023', 'June 2023'))
 
 
-#Parasitic load between sexes####
+# Parasitic load between sexes ####
 art<-art(prop~group+Error(timepoint),
          data = sh.prop %>%
            mutate(group = as.factor(group),
@@ -718,14 +976,12 @@ Fig5a<-ggplot(sh.prop, aes(factor(timepoint, levels = c('0722', '0523', '0623'))
   scale_x_discrete(labels = c('July 2022', 'May 2023', 'June 2023'))+
   scale_colour_manual(values = c('#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#cc4411', '#44cc66'))
-#Parasitic load through time points####
+# Parasitic load through time points ####
 #| No difference between time points were observed for any species
 with(subset(sh.prop, sex =='f'), dunn.test(prop, timepoint))
 with(subset(sh.prop, sex =='m'), dunn.test(prop, timepoint))
 
-#Parasitic load v sex steroids####
-#|No significant correlation was observed between sex steroids concentration
-#|and parasitic load in either species
+# Parasitic load v sex steroids ####
 
 #| No data for may 2023
 with(subset(sh.prop, sex == 'f'), cor.test(prop,horm, method = 'spearman')) # R = .39; p =.12
@@ -735,8 +991,14 @@ with(subset(sh.prop, sex == 'm' & timepoint == '0523'), cor.test(prop,horm, meth
 with(subset(sh.prop, sex == 'm' & timepoint == '0623'), cor.test(prop,horm, method = 'spearman')) # R = -.38; p =.18
 
 Fig5c<-ggplot(subset(sh.prop, sex =='f' & timepoint == '0623'), aes(horm, prop))+
-  geom_smooth(colour = '#cc4411', linewidth = 1, linetype = 2, se = F, method = 'lm')+
-  geom_point(fill = '#cc4411', shape = 22, size = 2.5, stroke = 1)+
+  geom_smooth(colour = '#cc4411',
+              linewidth = 1,
+              se = F,
+              method = 'lm')+
+  geom_point(fill = '#cc4411',
+             shape = 21,
+             size = 2.5,
+             stroke = 1)+
   theme_classic()+
   theme(legend.position = 'none',
         axis.title = element_text(size = 14, face = 'bold'),
@@ -746,26 +1008,24 @@ Fig5c<-ggplot(subset(sh.prop, sex =='f' & timepoint == '0623'), aes(horm, prop))
   ggtitle('c')
 
 Fig5d<-ggplot(subset(sh.prop, sex =='m' & timepoint != '0722'), aes(horm, prop))+
-  geom_smooth(aes(linetype = timepoint),
-              colour = '#44cc66', linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(shape = timepoint),
-             fill = '#44cc66', size = 2.5, stroke = 1)+
+  geom_smooth(colour = '#44cc66',
+              linewidth = 1,
+              se = F,
+              method = 'lm')+
+  geom_point(shape = 21,
+             fill = '#44cc66',
+             size = 2.5,
+             stroke = 1)+
   theme_classic()+
   theme(legend.position = 'none',
         axis.title = element_text(size = 14, face = 'bold'),
         plot.title = element_text(size = 16, face = 'bold', hjust = .9))+
   xlab('Testosterone concentration, ng/mL')+
   ylab('Parasitic load')+
-  ggtitle('d')+
-  scale_shape_manual(values = c(21, 22),
-                     labels = c('May 2023', 'June 2023'),
-                     name = 'Time point')+
-  scale_linetype_manual(values = c(1,2),
-                        labels = c('May 2023', 'June 2023'),
-                        name = 'Time point')
+  ggtitle('d')
 
 
-#Body condition v parasitic load####
+# Body condition v parasitic load ####
 #| SVL ~ m is close to linearity, so we can use proportion as a measure of
 #| the body condition.
 #| No significant effect of parasitic load on body condition was observed
@@ -801,7 +1061,57 @@ Fig5b<-ggplot(sh.prop, aes(bc, prop))+
   scale_fill_manual(values = c('#cc4411', '#44cc66'))
 
 
-#Fig5####
+# Infection prevalence between species ####
+
+sh.fval.prev <- sh.prop %>%
+  subset(group == 'f_D.valentini') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(fval = n(), .groups = 'keep')
+
+sh.mval.prev <- sh.prop %>%
+  subset(group == 'm_D.valentini') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(mval = n(), .groups = 'keep')
+
+x <- full_join(sh.fval.prev, sh.mval.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.test(x)
+
+Fig5g1 <- ggplot(sh.fval.prev, aes(infected, fval/sum(fval)))+
+  geom_col(fill = '#cc4411',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 14, face = 'bold'))+
+  ylim(c(0, 1))+
+  ylab('Prevalence')+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig5g2 <- ggplot(sh.mval.prev, aes(infected, mval/sum(mval)))+
+  geom_col(fill = '#44cc66',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        plot.title = element_text(size = 16, face = 'bold', hjust = .9))+
+  ggtitle('g')+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+
+Fig5g <- plot_grid(Fig5g1, Fig5g2,
+                   nrow = 1,
+                   align = 'hv',
+                   axis = 'tb')
+
+# Fig5 ####
 legend.plot<-ggplot(sh.prop, aes(svl, m))+
   geom_point(aes(fill = sex), shape = 21, size = 5.5, stroke = 1.2)+
   theme_classic()+
@@ -814,53 +1124,29 @@ legend.plot<-ggplot(sh.prop, aes(svl, m))+
                     ),
                     name = 'Cohort')
 
-legend<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
-
-legend.plot<-ggplot(subset(sh.horm_v_prop, group =='m_D.valentini'), aes(horm, prop))+
-  geom_smooth(aes(linetype = timepoint),
-              colour = 'gray70', linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(shape = timepoint),
-             fill = 'gray80', size = 3.5, stroke = 1)+
-  theme_classic()+
-  theme(legend.position = 'top',
-        legend.title = element_text(size = 14, face = 'bold'),
-        legend.text = element_text(size = 12),
-        axis.title = element_text(size = 14, face = 'bold'),
-        plot.title = element_text(size = 16, face = 'bold', hjust = .9),
-        legend.key.width = unit(2, 'cm'),
-        legend.margin = margin(0, 0, 0, 0),
-        legend.spacing = unit(0, "cm"),
-        legend.box.spacing = unit(0, "cm"))+
-  xlab('Testosterone concentration, ng/mL')+
-  ylab('Parasitic load')+
-  ggtitle('c')+
-  scale_shape_manual(values = c(21, 22),
-                     labels = c('May 2023', 'June 2023'),
-                     name = 'Time of collection')+
-  scale_linetype_manual(values = c(1,2),
-                        labels = c('May 2023', 'June 2023'),
-                        name = 'Time of collection')
-
-legend2<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
+leg5<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
 
 Fig5<-ggarrange(Fig5a, Fig5b, Fig5c, Fig5d, Fig5e, Fig5f,
                 ncol = 2,
                 nrow = 3,
                 align = 'hv')
-leg5<-ggarrange(legend, legend2, nrow = 1)
+
+Fig5 <- plot_grid(Fig5, Fig5g,
+                  ncol = 1,
+                  rel_heights = c(0.8, 0.2))
 
 plot_grid(Fig5, leg5,
           ncol = 1,
           rel_heights = c(0.95, 0.05))
-################################################################################
-#SR####
+
+# SR....................................................................... ####
 sr.prop<-subset(sr.prop, sex != 'sex')
-#Hormones through time points####
+# Hormones through time points ####
 with(subset(sr.horm, group =='f_D.armeniaca'), dunn.test(horm, timepoint, method = 'holm'))
 with(subset(sr.horm, group =='f_D.valentini'), dunn.test(horm, timepoint, method = 'holm'))
 with(subset(sr.horm, group =='m_D.valentini'), dunn.test(horm, timepoint, method = 'holm'))
 
-#Hormones between species####
+# Hormones between species ####
 art<-art(horm~group+Error(timepoint),
          data = subset(sr.horm, sex == 'f') %>%
            mutate(group = as.factor(group),
@@ -890,7 +1176,6 @@ Fig6f<-ggplot(subset(sr.horm, sex == 'm'), aes(timepoint, horm))+
                outliers = F,
                colour='#44cc66')+
   geom_jitter(shape = 21, size = 2.5, stroke = 1, fill = '#44cc66', width = 0.1)+
-  geom_pwc(tip.length = 0, size = 1, label = "{ifelse(p > 0.001, glue('p = {round(p, 4)}'), 'p < 0.001')}")+
   theme_classic()+
   theme(legend.position = 'none',
         axis.text.x = element_text(size = 12, face = 'bold'),
@@ -903,7 +1188,7 @@ Fig6f<-ggplot(subset(sr.horm, sex == 'm'), aes(timepoint, horm))+
 
 
 
-#Parasitic load between groups####
+# Parasitic load between groups ####
 art<-art(prop~group+Error(timepoint),
          data = sr.prop %>%
            mutate(group = as.factor(group),
@@ -928,7 +1213,7 @@ Fig6a<-ggplot(sr.prop, aes(factor(timepoint, levels = c('0522', '0722', '0523', 
   scale_colour_manual(values = c('#eebb22','#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#eebb22','#cc4411', '#44cc66'))
 
-#Parasitic load through time points####
+# Parasitic load through time points ####
 #| No difference between time points were observed for any species
 
 model<-with(subset(sr.prop, group =='f_D.armeniaca'), lm(prop~timepoint))
@@ -986,7 +1271,7 @@ temp2<-subset(sr.prop, timepoint == '0623' & group == 'm_D.valentini') %>%
   select(c('id', 'prop'))
 temp<-inner_join(temp1, temp2)
 
-#Parasitic load v sex steroids####
+# Parasitic load v sex steroids ####
 
 with(subset(sr.prop, group =='f_D.armeniaca'), cor.test(prop,horm, method = 'spearman')) # R = .36; p =.04
 with(subset(sr.prop, group =='f_D.armeniaca' & timepoint == '0523' ), cor.test(prop,horm, method = 'spearman')) # R = -.71; p =.09
@@ -1005,8 +1290,14 @@ with(subset(sr.prop, group =='m_D.valentini' & timepoint == '0623'), cor.test(pr
 
 
 Fig6c<-ggplot(subset(sr.prop, group !='m_D.valentini' & timepoint != '0522' & timepoint != '0722'), aes(horm, prop))+
-  geom_smooth(aes(colour = group, linetype = timepoint), linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(fill = group, shape = timepoint), size = 2.5, stroke = 1)+
+  geom_smooth(aes(colour = group),
+              linewidth = 1,
+              se = F,
+              method = 'lm')+
+  geom_point(aes(fill = group), 
+             size = 2.5, 
+             stroke = 1,
+             shape = 21)+
   theme_classic()+
   theme(legend.position = 'none',
         axis.title = element_text(size = 14, face = 'bold'),
@@ -1015,17 +1306,17 @@ Fig6c<-ggplot(subset(sr.prop, group !='m_D.valentini' & timepoint != '0522' & ti
   ylab('Parasitic load')+
   ggtitle('c')+
   scale_colour_manual(values = c('#eebb22', '#cc4411'))+
-  scale_fill_manual(values = c('#eebb22', '#cc4411'))+
-  scale_shape_manual(values = c(21, 22, 24),
-                     labels = c('May 2023', 'June 2023', 'September 2023'),
-                     name = 'Time point')+
-  scale_linetype_manual(values = c(1,2,3),
-                        labels = c('May 2023', 'June 2023', 'September 2023'),
-                        name = 'Time point')
+  scale_fill_manual(values = c('#eebb22', '#cc4411'))
 
 Fig6d<-ggplot(subset(sr.prop, group =='m_D.valentini' & timepoint != '0522' & timepoint != '0722' & timepoint != '0923'), aes(horm, prop))+
-  geom_smooth(aes(linetype = timepoint), linewidth = 1, se = F, method = 'lm', colour='#44cc66')+
-  geom_point(aes(shape = timepoint), size = 2.5, stroke = 1, fill='#44cc66')+
+  geom_smooth(linewidth = 1,
+              se = F,
+              method = 'lm',
+              colour='#44cc66')+
+  geom_point(shape = 21,
+             size = 2.5,
+             stroke = 1, 
+             fill='#44cc66')+
   theme_classic()+
   theme(legend.position = 'none',
         axis.title = element_text(size = 14, face = 'bold'),
@@ -1041,7 +1332,7 @@ Fig6d<-ggplot(subset(sr.prop, group =='m_D.valentini' & timepoint != '0522' & ti
                         name = 'Time point')
 
 
-#Body condition v parasitic load####
+# Body condition v parasitic load ####
 ggplot(sr.prop, aes(svl, m))+
   geom_smooth(aes(colour = factor(group, levels = c("f_D.armeniaca", "f_D.valentini", "m_D.valentini"))), linewidth = 1, se = F, method = 'lm')+
   geom_point(aes(fill = factor(group, levels = c("f_D.armeniaca", "f_D.valentini", "m_D.valentini"))), shape = 21, size = 2.5, stroke = 1)+
@@ -1074,7 +1365,90 @@ Fig6b<-ggplot(sr.prop, aes(bc, prop))+
   scale_colour_manual(values = c('#eebb22', '#cc4411', '#44cc66'))+
   scale_fill_manual(values = c('#eebb22', '#cc4411', '#44cc66'))
 
-#Fig6####
+# Infection prevalence between species ####
+sr.darm.prev <- sr.prop %>%
+  subset(group == 'f_D.armeniaca') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(darm = n(), .groups = 'keep')
+
+sr.fval.prev <- sr.prop %>%
+  subset(group == 'f_D.valentini') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(fval = n(), .groups = 'keep')
+
+sr.mval.prev <- sr.prop %>%
+  subset(group == 'm_D.valentini') %>%
+  mutate(infected = case_when(prop == 0 ~ 'healthy',
+                              prop > 0 ~ 'infected')) %>%
+  group_by(infected) %>%
+  summarise(mval = n(), .groups = 'keep')
+
+fisher.p <- c()
+
+x <- full_join(sr.darm.prev, sr.fval.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(sr.darm.prev, sr.mval.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+x <- full_join(sr.fval.prev, sr.mval.prev) %>%
+  column_to_rownames('infected') %>%
+  as.matrix()
+fisher.p <- append(fisher.p, fisher.test(x)$p.value)
+
+names(fisher.p) <- c('Darm v Dval_f', 'Darm v Dval_m',
+                     'Dval_f v Dval_m')
+fisher.p <- p.adjust(fisher.p, method = 'holm')
+fisher.p
+
+Fig6g1 <- ggplot(sr.darm.prev, aes(infected, darm/sum(darm)))+
+  geom_col(fill = '#eebb22',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 14, face = 'bold'))+
+  ylim(c(0, 1))+
+  ylab('Prevalence')+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig6g2 <- ggplot(sr.fval.prev, aes(infected, fval/sum(fval)))+
+  geom_col(fill = '#cc4411',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text.x = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank())+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+Fig6g3 <- ggplot(sr.mval.prev, aes(infected, mval/sum(mval)))+
+  geom_col(fill = '#44cc66',
+           colour = 'gray20')+
+  theme_classic()+
+  theme(legend.position = 'none',
+        axis.text = element_text(size = 12, face = 'bold'),
+        axis.title.x = element_blank(),
+        plot.title = element_text(size = 16, face = 'bold', hjust = .85))+
+  ggtitle('g')+
+  ylim(c(0, 1))+
+  easy_remove_y_axis()+
+  scale_x_discrete(labels = c('Healthy', 'Infected'))
+
+Fig6g <- plot_grid(Fig6g1, Fig6g2, Fig6g3,
+                   nrow = 1,
+                   align = 'hv',
+                   axis = 'tb')
+
+# Fig6 ####
 legend.plot<-ggplot(sr.prop, aes(svl, m))+
   geom_point(aes(fill = group), shape = 21, size = 5.5, stroke = 1.2)+
   theme_classic()+
@@ -1088,41 +1462,16 @@ legend.plot<-ggplot(sr.prop, aes(svl, m))+
                     ),
                     name = 'Cohort')
 
-legend<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
-
-legend.plot<-ggplot(subset(sr.horm_v_prop, group =='f_D.valentini'), aes(horm, prop))+
-  geom_smooth(aes(linetype = timepoint),
-              colour = 'gray70', linewidth = 1, se = F, method = 'lm')+
-  geom_point(aes(shape = timepoint),
-             fill = 'gray80', size = 3.5, stroke = 1)+
-  theme_classic()+
-  theme(legend.position = 'top',
-        legend.title = element_text(size = 14, face = 'bold'),
-        legend.text = element_text(size = 12),
-        axis.title = element_text(size = 14, face = 'bold'),
-        plot.title = element_text(size = 16, face = 'bold', hjust = .9),
-        legend.key.width = unit(2, 'cm'),
-        legend.margin = margin(0, 0, 0, 0),
-        legend.spacing = unit(0, "cm"),
-        legend.box.spacing = unit(0, "cm"))+
-  xlab('Testosterone concentration, ng/mL')+
-  ylab('Parasitic load')+
-  ggtitle('c')+
-  scale_shape_manual(values = c(21, 22, 24),
-                     labels = c('May 2023', 'June 2023', 'September 2023'),
-                     name = 'Time of collection')+
-  scale_linetype_manual(values = c(1,2,3),
-                        labels = c('May 2023', 'June 2023', 'September 2023'),
-                        name = 'Time of collection')
-
-legend2<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
+leg6<-get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
 
 Fig6<-ggarrange(Fig6a, Fig6b, Fig6c, Fig6d, Fig6e, Fig6f,
                 ncol = 2,
                 nrow = 3,
                 align = 'hv')
-leg6<-ggarrange(legend, legend2, nrow = 1)
 
+Fig6 <- plot_grid(Fig6, Fig6g,
+                  ncol = 1,
+                  rel_heights = c(0.8, 0.2))
 plot_grid(Fig6, leg6,
           ncol = 1,
           rel_heights = c(0.95, 0.05))

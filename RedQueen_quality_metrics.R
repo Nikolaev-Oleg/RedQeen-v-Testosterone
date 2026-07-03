@@ -2,6 +2,7 @@ library(tidyverse)
 library(DescTools)
 library(ggpubr)
 library(cowplot)
+library(patchwork)
 
 # Validation set quality metrics ####
 yolo_RBC_quality <- read.csv('./YOLO_RBC/metrics_out.csv')[-1, -1] %>%
@@ -164,15 +165,11 @@ legend.plot <- ggplot(legend.df, aes(x, y, fill = g))+
                                expression(YOLO[infected])),
                     name = '')
 legend <- get_plot_component(legend.plot, 'guide-box-top', return_all = TRUE)
+legend <- plot_grid(legend, NULL, NULL,
+                    nrow = 1)
 
-fig1a <- plot_grid(legend, fig1a,
-                   ncol = 1,
-                   rel_heights = c(0.05, 0.95))
-fig1bc <- plot_grid(fig1b, fig1c,
-                  nrow = 1)
-fig1abc <- plot_grid(fig1a, fig1bc,
-                     ncol = 1)
-fig1def <- plot_grid(fig1d, fig1e, fig1f,
-                     nrow = 1)
-Fig1 <- plot_grid(fig1abc, fig1def,
-                  ncol = 1)
+Fig1 <- (fig1a + fig1b + fig1c)/(fig1d + fig1e + fig1f)
+
+plot_grid(legend, Fig1,
+          ncol = 1,
+          rel_heights = c(0.05, 0.95))
