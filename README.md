@@ -32,12 +32,12 @@ This repository contains the following files and folders:
 - **YOLO_paras**: Data and code for YOLOinfected model
   - **YOLO_train.py**: Ultralytics code for model training. Pretrained model configuration file yolov8s.yaml is included in Ultralytics package
   - **best.pt**: Weights of the trained model
-  - **YOLO_paras_counter_v2.2.py**: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns _a)_ a .csv file with cell counts and _b)_ a directory with annotated images. Counts infected RBC. Do not classify parasites.
+  - **YOLO_paras_counter_v2.2.py**: Cell counter based on the trained model. Takes a directory with multiple subdirectories with images and returns _a)_ a .csv file with cell counts and _b)_ a directory with annotated images. Counts infected RBC. Does not classify parasites.
   - **metric_calculator2.py**: Computes the model performance metrics based on validation dataset. In particular, was used for optimal confedence selection
   - **metrics_out2.csv**: The output of metric_calculator2.py
   - **data**
     - **images**
-      - **val**: A directory with validation set of images (used by metric_calculator2.py). Note that only 50 images are in thes repo
+      - **val**: A directory with validation set of images (used by metric_calculator2.py). Note that only 50 images are in this repo
     - **labels**
       - **val**: A directory with validation set of annotations (used by metric_calculator2.py). Note that only 50 images are in this repo
 - **data**: contains input filis for statistical analysis
@@ -49,7 +49,7 @@ This repository contains the following files and folders:
   - **main_check.csv**: The table containing all the data, including sex steroids concentration and manually checked cell counts
 - **RedQueen_dataprep.R**: Integrates horm.csv, metadata.csv and cell counts into a single table
 - **RedQueen_main.R**: Main statistical pipline. !!! Alpha version !!!
-- **RedQueen_quality_metrics.R**: Quality metrics of YOLOrbc and YOLOinfected models (FP/TP/FN, F1 etc.). !!! Alpha version !!!
+- **RedQueen_quality_metrics.R**: Quality metrics of YOLOrbc and YOLOinfected models (FP/TP/FN, F1 etc.)
 - **README.md**: This readme 
 
 # Results
